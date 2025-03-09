@@ -4,6 +4,7 @@ from textnode import TextType, TextNode
 from utils import text_node_to_html_node, split_nodes_delimiter
 from utils import extract_markdown_images, extract_markdown_links
 from utils import split_nodes_link, split_nodes_image
+from utils import text_to_textnodes
 
 
 class TestUtils(unittest.TestCase):
@@ -270,6 +271,44 @@ class TestUtils(unittest.TestCase):
         node = TextNode("", TextType.TEXT,)
         expected = [TextNode("", TextType.TEXT,)]
         self.assertEqual(split_nodes_image([node]), expected)
+
+
+    ### test for text_to_textnodes
+
+    def test_for_text_to_textnodes(self):
+        input = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        node = TextNode(input, TextType.TEXT,)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertEqual(text_to_textnodes(input), expected)
+
+    def test_for_text_to_textnodes_with_empty_string(self):
+        input = ""
+        expected = []
+        self.assertEqual(text_to_textnodes(input), expected)
+
+    def test_for_text_to_textnodes_with_multiple_of_same_format_type(self):
+        input = "Bold **one** and bold **two**."
+        expected = [
+            TextNode("Bold ", TextType.TEXT),
+            TextNode("one", TextType.BOLD),
+            TextNode(" and bold ", TextType.TEXT),
+            TextNode("two", TextType.BOLD),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(text_to_textnodes(input), expected)
+
+
 
 
 if __name__ == "__main__":
