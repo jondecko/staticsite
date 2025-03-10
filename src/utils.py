@@ -123,6 +123,7 @@ def split_nodes_link(old_nodes):
 
     return new_nodes
 
+
 def text_to_textnodes(text):
     if not text: return []
 
@@ -133,3 +134,28 @@ def text_to_textnodes(text):
     nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
     nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
     return nodes
+
+
+def markdown_to_blocks(markdown):
+    blocks = markdown.split('\n\n')
+    blocks = map(lambda x: x.strip(), blocks)
+    blocks = filter(lambda x: x != '', blocks)
+    return list(blocks)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

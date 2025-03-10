@@ -5,6 +5,7 @@ from utils import text_node_to_html_node, split_nodes_delimiter
 from utils import extract_markdown_images, extract_markdown_links
 from utils import split_nodes_link, split_nodes_image
 from utils import text_to_textnodes
+from utils import markdown_to_blocks
 
 
 class TestUtils(unittest.TestCase):
@@ -308,6 +309,52 @@ class TestUtils(unittest.TestCase):
         ]
         self.assertEqual(text_to_textnodes(input), expected)
 
+
+    ### test for markdown_to_blocks
+
+    def test_for_markdown_to_blocks_verify_we_split_on_double_newline(self):
+        input = "This is the first block\n\nThis is the second block"
+        expected = [
+            "This is the first block",
+            "This is the second block",
+        ]
+        self.assertEqual(markdown_to_blocks(input), expected)
+
+    def test_for_markdown_to_blocks_will_strip_leading_and_trailing_whitespace(self):
+        input = "This is the first block \n\n This is the second block"
+        expected = [
+            "This is the first block",
+            "This is the second block",
+        ]
+        self.assertEqual(markdown_to_blocks(input), expected)
+
+    def test_for_markdown_to_blocks_will_remove_blank_blocks_due_to_excessive_newlines(self):
+        input = "This is the first block\n\n\n\n\n\nThis is the second block"
+        expected = [
+            "This is the first block",
+            "This is the second block",
+        ]
+        self.assertEqual(markdown_to_blocks(input), expected)
+
+    def test_markdown_to_blocks_with_more_complex_input(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
 
 
 
