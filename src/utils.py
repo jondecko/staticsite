@@ -3,7 +3,7 @@ import re
 from parentnode import ParentNode
 from leafnode import LeafNode 
 from htmlnode import HTMLNode
-from textnode import TextType, TextNode
+from textnode import TextType, TextNode, BlockType
 
 
 def text_node_to_html_node(text_node):
@@ -142,10 +142,34 @@ def markdown_to_blocks(markdown):
     blocks = filter(lambda x: x != '', blocks)
     return list(blocks)
 
+def block_to_block_type(text_block):
+    if text_block[0] == "#":
+        sections = text_block.split(" ")
+        if len(sections[0]) <= 6 and all(map(lambda x: x == "#", sections[0])):
+            return BlockType.HEADING
+    elif text_block[0] == "`":
+        sections = text_block.split("```")
+        if len(sections) == 3 and sections[0] == "" and sections[2] == "":
+            return BlockType.CODE
+    elif text_block[0] == ">":
+        sections = text_block.split("\n")
+        if all(map(lambda x: x[0] == ">", sections)):
+            return BlockType.QUOTE
+    elif text_block[0] == "-":
+        sections = text_block.split("\n")
+        if all(map(lambda x: x[0:2] == "- ", sections)):
+            return BlockType.UNORDERED_LIST
+    elif text_block[0] in "123456789":
+        sections = text_block.split("\n")
+        for index, section in enumerate(sections):
+            x = section.split(".")
+            if len(x) == 2 and int(x[0]) == index + 1:
+                continue 
+            else:
+                return BlockType.PARAGRAPH
+        return BlockType.ORDERED_LIST
 
-
-
-
+    return BlockType.PARAGRAPH
 
 
 

@@ -1,11 +1,12 @@
 import unittest
 
-from textnode import TextType, TextNode
+from textnode import TextType, TextNode, BlockType
 from utils import text_node_to_html_node, split_nodes_delimiter
 from utils import extract_markdown_images, extract_markdown_links
 from utils import split_nodes_link, split_nodes_image
 from utils import text_to_textnodes
 from utils import markdown_to_blocks
+from utils import block_to_block_type
 
 
 class TestUtils(unittest.TestCase):
@@ -355,6 +356,80 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+    ### test for block_to_block_type
+
+    def test_block_to_block_type_defaults_to_a_normal_paragraph(self):
+        input = "This is a block with no special block characters"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_headings(self):
+        input = "# A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+        input = "## A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+        input = "### A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+        input = "#### A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+        input = "##### A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+        input = "###### A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.HEADING)
+
+    def test_block_to_block_type_with_invalid_heading_needs_space(self):
+        input = "#An invalid heading, needs space after pound"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_invalid_heading_7_or_more(self):
+        input = "####### A valid heading"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_code_blocks(self):
+        input = "```This is a code block```"
+        self.assertEqual(block_to_block_type(input), BlockType.CODE)
+
+    def test_block_to_block_type_with_invalid_code_blocks(self):
+        input = "``This is a code block```"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_code_block_with_no_end_ticks(self):
+        input = "```This is a code block"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_quote(self):
+        input = "> This is a valid quote"
+        self.assertEqual(block_to_block_type(input), BlockType.QUOTE)
+        input = ">This is also a valid quote"
+        self.assertEqual(block_to_block_type(input), BlockType.QUOTE)
+
+    def test_block_to_block_type_with_quote_on_multi_line(self):
+        input = ">A valid quote\n>another valid quote\n> a third valid quote"
+        self.assertEqual(block_to_block_type(input), BlockType.QUOTE)
+
+    def test_block_to_block_type_with_invalid_quote_on_multi_line(self):
+        input = ">A valid quote\n>another valid quote\n invalid third line no quote"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_unordered_list(self):
+        input = "- first ol list item"
+        self.assertEqual(block_to_block_type(input), BlockType.UNORDERED_LIST)
+        input = "- first ol list item\n- second ol list item"
+        self.assertEqual(block_to_block_type(input), BlockType.UNORDERED_LIST)
+
+    def test_block_to_block_type_with_invalid_unordered_list(self):
+        input = "- first ol list item\nthis is not a valid item"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_with_ordered_list(self):
+        input = "1. first ol list item"
+        self.assertEqual(block_to_block_type(input), BlockType.ORDERED_LIST)
+        input = "1. first ol list item\n2. second ol list item"
+        self.assertEqual(block_to_block_type(input), BlockType.ORDERED_LIST)
+
+    def test_block_to_block_type_with_invalid_ordered_list(self):
+        input = "1. first ol list item\nthis is not a valid item"
+        self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
 
 
 
