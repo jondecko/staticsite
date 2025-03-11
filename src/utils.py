@@ -172,14 +172,57 @@ def block_to_block_type(text_block):
     return BlockType.PARAGRAPH
 
 
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    parent_node = ParentNode("div", [], )
+
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        block_node = None
+
+        match(block_type):
+            case BlockType.PARAGRAPH:
+                clean_block = block.replace('\n', ' ')
+                children = text_to_children(clean_block)
+                block_node = ParentNode("p", children, )
+            case BlockType.HEADING:
+                sections = block.split(" ", 1)
+                hvalue = len(sections[0])
+                heading_text = sections[1]
+                children = text_to_children(heading_text)
+                block_node = ParentNode(f"h{hvalue}", children)
+            case BlockType.CODE:
+                clean_block = block.replace('```', '')
+                block_node = ParentNode("pre", [])
+                block_node.children.append(LeafNode("code", clean_block, []))
+            case BlockType.QUOTE:
+                clean_block = block.replace('\n', ' ').replace('> ', '')
+                children = text_to_children(clean_block)
+                block_node = ParentNode("blockquote", children, )
+            case BlockType.UNORDERED_LIST:
+                clean_block = block.replace('- ', '')
+                children = []
+                block_node = ParentNode("ul", children, )
+                for li_content in clean_block.split('\n'):
+                    children = text_to_children(li_content)
+                    block_node.children.append(ParentNode("li", children))
+            case BlockType.ORDERED_LIST:
+                children = []
+                block_node = ParentNode("ol", children, )
+                for li_content in block.split('\n'):
+                    children = text_to_children(li_content.split(" ", 1)[1])
+                    block_node.children.append(ParentNode("li", children))
+
+        if block_node:
+            parent_node.children.append(block_node)
+
+    return parent_node
 
 
-
-
-
-
-
-
-
-
-
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    html_nodes = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        html_nodes.append(html_node)
+    return html_nodes
