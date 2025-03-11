@@ -1,4 +1,6 @@
 import re
+import os
+import shutil
 
 from parentnode import ParentNode
 from leafnode import LeafNode 
@@ -226,3 +228,31 @@ def text_to_children(text):
         html_node = text_node_to_html_node(text_node)
         html_nodes.append(html_node)
     return html_nodes
+
+
+def clear_public_directory(dir_to_remove="./public"):
+    print("STARTED - clear_public_directory")
+    if os.path.exists(dir_to_remove):
+        print(f"REMOVING - {dir_to_remove}")
+        shutil.rmtree(dir_to_remove)
+    else:
+        print(f"NOOP - {dir_to_remove} did not exist")
+
+
+def build_public_directory(dir_to_build_from="./static", dir_to_build_to="./public"):
+    print("STARTED - build_public_directory")
+    if not os.path.exists(dir_to_build_to):
+        print(f"CREATING - {dir_to_build_to}")
+        os.mkdir(dir_to_build_to)
+
+    dirs = os.listdir(dir_to_build_from)
+    for dir in dirs:
+        path_from = os.path.join(dir_to_build_from, dir)
+        path_to = os.path.join(dir_to_build_to, dir)
+        if os.path.isdir(path_from):
+            print(f"CREATING - {path_to}")
+            os.mkdir(path_to)
+            build_public_directory(path_from, path_to)
+        else:
+            print(f"COPY - {path_from} TO {path_to}")
+            shutil.copy(path_from, path_to)

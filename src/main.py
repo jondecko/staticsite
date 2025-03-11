@@ -1,10 +1,11 @@
 from textnode import TextNode
 from textnode import TextType
+from utils import clear_public_directory
+from utils import build_public_directory 
 
 def main():
-    tn = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-
-    print(tn)
+    clear_public_directory()
+    build_public_directory()
 
 
 main()
