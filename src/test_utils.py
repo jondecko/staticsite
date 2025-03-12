@@ -8,6 +8,7 @@ from utils import text_to_textnodes
 from utils import markdown_to_blocks
 from utils import block_to_block_type
 from utils import markdown_to_html_node
+from utils import extract_title
 
 
 class TestUtils(unittest.TestCase):
@@ -43,13 +44,13 @@ class TestUtils(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "a")
         self.assertEqual(html_node.value, "Click Me")
-        self.assertEqual(html_node.props["src"], "google.com")
+        self.assertEqual(html_node.props["href"], "google.com")
 
     def test_img(self):
         node = TextNode("this image is cool", TextType.IMAGE, url="cool.jpg")
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
-        self.assertEqual(html_node.value, None)
+        self.assertEqual(html_node.value, "this image is cool")
         self.assertEqual(html_node.props["src"], "cool.jpg")
         self.assertEqual(html_node.props["alt"], "this image is cool")
 
@@ -235,6 +236,13 @@ class TestUtils(unittest.TestCase):
             TextNode("doggy", TextType.IMAGE, "doggy.jpg"),
             TextNode(" and ", TextType.TEXT),
             TextNode("kitty", TextType.IMAGE, "kitty.jpg"),
+        ]
+        self.assertEqual(split_nodes_image([node]), expected)
+
+    def test_for_split_nodes_image_with_only_image_single(self):
+        node = TextNode("![doggy](doggy.jpg)", TextType.TEXT,)
+        expected = [
+            TextNode("doggy", TextType.IMAGE, "doggy.jpg"),
         ]
         self.assertEqual(split_nodes_image([node]), expected)
 
@@ -432,6 +440,7 @@ This is the same paragraph on a new line
         input = "1. first ol list item\nthis is not a valid item"
         self.assertEqual(block_to_block_type(input), BlockType.PARAGRAPH)
 
+    ###
 
     def test_paragraphs(self):
         md = """
@@ -513,6 +522,28 @@ the **same** even with inline stuff
             html,
             "<div><ol><li>item one</li><li>item two</li></ol></div>",
         )
+
+    ### test for extract_title 
+
+    def test_extract_title_valid(self):
+        md = "# I am a valid title"
+        self.assertEqual(extract_title(md), "I am a valid title")
+
+    def test_extract_title_valid_but_under_a_h2(self):
+        md = "## Not the title\n\n# I am a valid title"
+        self.assertEqual(extract_title(md), "I am a valid title")
+
+    def test_extract_title_valid_as_the_first(self):
+        md = "# I am a valid title\n\n# Random second title"
+        self.assertEqual(extract_title(md), "I am a valid title")
+
+    def test_extract_title_valid_raise_error_with_no_title(self):
+        md = "## No valid titles"
+        with self.assertRaises(Exception) as context:
+            extract_title(md)
+        self.assertEqual(str(context.exception), "no title to extract")
+
+
 
 if __name__ == "__main__":
     unittest.main()

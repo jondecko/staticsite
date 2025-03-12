@@ -19,9 +19,9 @@ def text_node_to_html_node(text_node):
         case TextType.CODE:
             return LeafNode("code", text_node.text)
         case TextType.LINK:
-            return LeafNode("a", text_node.text, {"src": text_node.url})
+            return LeafNode("a", text_node.text, {"href": text_node.url})
         case TextType.IMAGE:
-            return LeafNode("img", None, {"src": text_node.url, "alt": text_node.text})
+            return LeafNode("img", text_node.text, {"src": text_node.url, "alt": text_node.text})
 
     node = HTMLNode()
     return node
@@ -79,6 +79,7 @@ def split_nodes_image(old_nodes):
         text_to_split = node.text
         for image in images:
             temp = f"![{image[0]}]({image[1]})"
+
             sections = text_to_split.split(temp, 1)
 
             if sections[0] == "":
@@ -256,3 +257,38 @@ def build_public_directory(dir_to_build_from="./static", dir_to_build_to="./publ
         else:
             print(f"COPY - {path_from} TO {path_to}")
             shutil.copy(path_from, path_to)
+
+
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block_to_block_type(block) == BlockType.HEADING:
+            sections = block.split(" ", 1)
+            if len(sections[0]) == 1:
+                return sections[1]
+    raise Exception("no title to extract")
+
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    from_file = open(from_path, "r")
+    md = from_file.read()
+    from_file.close()
+
+    template_file = open(template_path, "r")
+    template = template_file.read()
+    template_file.close()
+
+    html_node = markdown_to_html_node(md)
+
+    title = extract_title(md)
+    html_string = html_node.to_html()
+
+    template = template.replace("{{ Title }}", title)
+    template = template.replace("{{ Content }}", html_string)
+
+    # Need to verify that the file structure is present
+    dest_file = open(dest_path, "a")
+    dest_file.write(template)
+    dest_file.close()
