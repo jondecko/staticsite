@@ -76,7 +76,7 @@ class TestUtils(unittest.TestCase):
         node = TextNode("This is text with a `code block word", TextType.TEXT)
         with self.assertRaises(Exception) as context:
             split_nodes_delimiter([node], "`", TextType.CODE)
-        self.assertEqual(str(context.exception), "delimiter of ` starts but does not end")
+        self.assertEqual(str(context.exception), "invalid markdown, formatted section not closed")
 
     def test_split_nodes_code_blocks(self):
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
@@ -88,12 +88,20 @@ class TestUtils(unittest.TestCase):
         ]
         self.assertEqual(new_nodes, expected)
 
-    def test_split_nodes_with_delimiter_at_beginning(self):###########
+    def test_split_nodes_with_delimiter_at_beginning(self):
         node = TextNode("**Start** of the test", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         expected = [
             TextNode("Start", TextType.BOLD),
             TextNode(" of the test", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected)
+
+    def test_split_nodes_with_delimiter_whole_line_is_delim(self):
+        node = TextNode("**Start**", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        expected = [
+            TextNode("Start", TextType.BOLD),
         ]
         self.assertEqual(new_nodes, expected)
 
@@ -126,7 +134,6 @@ class TestUtils(unittest.TestCase):
             TextNode("one code block", TextType.CODE),
             TextNode(" and then some more text and ", TextType.TEXT),
             TextNode("another code block", TextType.CODE),
-            TextNode("", TextType.TEXT),
         ]
         self.assertEqual(new_nodes, expected)
 

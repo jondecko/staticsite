@@ -29,32 +29,22 @@ def text_node_to_html_node(text_node):
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
-
     for old_node in old_nodes:
         if old_node.text_type != TextType.TEXT:
             new_nodes.append(old_node)
             continue
-        
-        parts = old_node.text.split(delimiter)
-
-        if len(parts) == 1:
-            new_nodes.append(old_node)
-            continue
-        
-        if len(parts) % 2 == 0:
-            raise Exception(f"delimiter of {delimiter} starts but does not end")
-        
-        if parts[0] == "":  #this is when we split and delim is at beginning 
-            new_nodes.append(TextNode(parts[1], text_type))
-            for i in range(2, len(parts), 2):
-                new_nodes.append(TextNode(parts[i], TextType.TEXT))
-        else:
-            new_nodes.append(TextNode(parts[0], TextType.TEXT))
-            for i in range(1, len(parts), 2):
-                new_nodes.append(TextNode(parts[i], text_type))
-                if i + 1 < len(parts):
-                    new_nodes.append(TextNode(parts[i+1], TextType.TEXT))
-    
+        split_nodes = []
+        sections = old_node.text.split(delimiter)
+        if len(sections) % 2 == 0:
+            raise ValueError("invalid markdown, formatted section not closed")
+        for i in range(len(sections)):
+            if sections[i] == "":
+                continue
+            if i % 2 == 0:
+                split_nodes.append(TextNode(sections[i], TextType.TEXT))
+            else:
+                split_nodes.append(TextNode(sections[i], text_type))
+        new_nodes.extend(split_nodes)
     return new_nodes
 
 
