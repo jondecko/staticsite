@@ -8,11 +8,7 @@ from utils import generate_page
 from utils import generate_pages_recursive
 
 def main():
-    basepath = '/'
-    for arg in sys.argv:
-        parts = arg.split('=')
-        if parts[0] == 'basepath': 
-            basepath = parts[1]
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
 
     clear_public_directory('docs')
     build_public_directory('static', 'docs')
