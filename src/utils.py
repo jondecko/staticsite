@@ -44,12 +44,16 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if len(parts) % 2 == 0:
             raise Exception(f"delimiter of {delimiter} starts but does not end")
         
-        new_nodes.append(TextNode(parts[0], TextType.TEXT))
-        
-        for i in range(1, len(parts), 2):
-            new_nodes.append(TextNode(parts[i], text_type))
-            if i + 1 < len(parts):
-                new_nodes.append(TextNode(parts[i+1], TextType.TEXT))
+        if parts[0] == "":  #this is when we split and delim is at beginning 
+            new_nodes.append(TextNode(parts[1], text_type))
+            for i in range(2, len(parts), 2):
+                new_nodes.append(TextNode(parts[i], TextType.TEXT))
+        else:
+            new_nodes.append(TextNode(parts[0], TextType.TEXT))
+            for i in range(1, len(parts), 2):
+                new_nodes.append(TextNode(parts[i], text_type))
+                if i + 1 < len(parts):
+                    new_nodes.append(TextNode(parts[i+1], TextType.TEXT))
     
     return new_nodes
 
@@ -288,7 +292,7 @@ def generate_page(from_path, template_path, dest_path):
     template = template.replace("{{ Title }}", title)
     template = template.replace("{{ Content }}", html_string)
 
-    # Need to verify that the file structure is present
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     dest_file = open(dest_path, "a")
     dest_file.write(template)
     dest_file.close()

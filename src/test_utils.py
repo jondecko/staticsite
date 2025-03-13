@@ -88,6 +88,15 @@ class TestUtils(unittest.TestCase):
         ]
         self.assertEqual(new_nodes, expected)
 
+    def test_split_nodes_with_delimiter_at_beginning(self):###########
+        node = TextNode("**Start** of the test", TextType.TEXT)
+        new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
+        expected = [
+            TextNode("Start", TextType.BOLD),
+            TextNode(" of the test", TextType.TEXT),
+        ]
+        self.assertEqual(new_nodes, expected)
+
     def test_split_nodes_italic_blocks(self):
         node = TextNode("This is text with an _italic_ word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "_", TextType.ITALIC)
@@ -353,7 +362,7 @@ This is **bolded** paragraph
 This is another paragraph with _italic_ text and `code` here
 This is the same paragraph on a new line
 
-- This is a list
+- **This** is a list
 - with items
 """
         blocks = markdown_to_blocks(md)
@@ -362,7 +371,7 @@ This is the same paragraph on a new line
             [
                 "This is **bolded** paragraph",
                 "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
-                "- This is a list\n- with items",
+                "- **This** is a list\n- with items",
             ],
         )
 
